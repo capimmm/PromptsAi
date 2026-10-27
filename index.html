@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapimmPromptsAi — estúdio de prompts & textos para IA</title>
+<meta name="description" content="Prompts e uma biblioteca viva de textos .txt para estudar e ensinar inteligências artificiais. Design monocromático, motion fluido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   RESET + TOKENS (MONOCROMÁTICO)
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050505;
+  --bg-2:#0a0a0a;
+  --ink:#f5f5f5;
+  --ink-dim:rgba(245,245,245,.62);
+  --ink-faint:rgba(245,245,245,.28);
+  --line:rgba(245,245,245,.10);
+  --line-2:rgba(245,245,245,.20);
+  --white:#ffffff;
+  --gray:#888;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-soft:cubic-bezier(.65,0,.35,1);
+  --r:18px;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  cursor:none;
+}
+@media (hover:none){ body{cursor:auto} }
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:none}
+::selection{background:var(--white);color:#000}
+@media (hover:none){ button{cursor:pointer} }
+
+/* scrollbar */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(245,245,245,.15);border-radius:8px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:rgba(245,245,245,.30)}
+
+/* ============================================================
+   FUNDO VIVO (P&B)
+   ============================================================ */
+#bg{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;opacity:.35;
+}
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{
+  position:absolute;border-radius:50%;
+  filter:blur(80px);
+  will-change:transform;
+  opacity:.35;
+}
+.o1{
+  width:50vw;height:50vw;left:-12vw;top:-14vw;
+  background:radial-gradient(circle at 40% 40%,rgba(255,255,255,.35),rgba(255,255,255,0) 68%);
+  animation:drift1 28s ease-in-out infinite;
+}
+.o2{
+  width:44vw;height:44vw;right:-12vw;top:20vh;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.20),rgba(255,255,255,0) 70%);
+  animation:drift2 34s ease-in-out infinite;
+}
+.o3{
+  width:38vw;height:38vw;left:26vw;bottom:-16vw;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.14),rgba(255,255,255,0) 70%);
+  animation:drift3 40s ease-in-out infinite;
+}
+@keyframes drift1{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(5vw,4vh,0) scale(1.18)}
+}
+@keyframes drift2{
+  0%,100%{transform:translate3d(0,0,0) scale(1.05)}
+  50%{transform:translate3d(-6vw,-5vh,0) scale(.9)}
+}
+@keyframes drift3{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(-4vw,-7vh,0) scale(1.22)}
+}
+
+.grain{
+  position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.06;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation:grainShift 8s steps(6) infinite;
+}
+@keyframes grainShift{
+  0%{transform:translate(0,0)}
+  20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}
+  100%{transform:translate(0,0)}
+}
+
+/* ============================================================
+   CURSOR
+   ============================================================ */
+.cursor,.cursor-dot{
+  position:fixed;top:0;left:0;pointer-events:none;z-index:9999;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+.cursor{
+  width:34px;height:34px;
+  border:1px solid rgba(255,255,255,.5);
+  transition:width .35s var(--ease),height .35s var(--ease),border-color .35s,background .35s,opacity .3s;
+  mix-blend-mode:difference;
+}
+.cursor.hover{
+  width:64px;height:64px;
+  border-color:#fff;
+  background:rgba(255,255,255,.1);
+}
+.cursor-dot{
+  width:5px;height:5px;background:#fff;
+  transition:opacity .3s,transform .15s var(--ease);
+}
+@media (hover:none){.cursor,.cursor-dot{display:none}}
+
+/* ============================================================
+   PROGRESSO
+   ============================================================ */
+.progress{
+  position:fixed;top:0;left:0;height:2px;z-index:200;
+  width:0%;background:#fff;
+  box-shadow:0 0 18px rgba(255,255,255,.5);
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:26px clamp(20px,5vw,64px);
+  transition:padding .5s var(--ease),background .5s,border-color .5s;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  padding:14px clamp(20px,5vw,64px);
+  background:rgba(5,5,5,.7);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom-color:var(--line);
+}
+.logo{
+  font-family:var(--sans);font-weight:700;font-size:22px;letter-spacing:-.04em;
+  color:var(--white);
+}
+.logo span{color:var(--gray)}
+.nav-links{display:flex;gap:clamp(16px,3vw,40px)}
+.nav-links a{
+  position:relative;font-size:14px;font-weight:500;color:var(--ink-dim);
+  letter-spacing:.01em;padding:6px 0;
+}
+.nav-links a span{position:relative;display:inline-block}
+.nav-links a span::after{
+  content:'';position:absolute;left:0;bottom:-3px;width:100%;height:1px;
+  background:#fff;transform:scaleX(0);transform-origin:right;
+  transition:transform .5s var(--ease);
+}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover span::after{transform:scaleX(1);transform-origin:left}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{
+  position:relative;z-index:2;
+  min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(120px,18vh,180px) clamp(20px,5vw,64px) 80px;
+}
+.hero-inner{max-width:1180px;margin:0 auto;width:100%}
+.eyebrow{
+  display:flex;align-items:center;gap:14px;
+  font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-faint);
+  opacity:0;transform:translateY(14px);
+  animation:fadeUp .9s var(--ease) var(--d) forwards;
+}
+.eyebrow::before{
+  content:'';width:44px;height:1px;background:var(--ink-faint);
+}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+.hero-title{
+  margin-top:clamp(20px,3vh,36px);
+  font-size:clamp(52px,11.5vw,168px);
+  line-height:.92;
+  font-weight:500;
+  letter-spacing:-.045em;
+  color:var(--white);
+}
+.hero-title .line{display:block;overflow:hidden;padding-bottom:.06em}
+.hero-title .word{
+  display:inline-block;
+  transform:translateY(112%);
+  animation:riseUp 1.05s var(--ease) var(--d) forwards;
+  will-change:transform;
+}
+@keyframes riseUp{to{transform:translateY(0)}}
+.hero-title .serif{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:400;
+  letter-spacing:-.02em;
+  background:linear-gradient(105deg,#fff,#aaa);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  padding-right:.06em;
+}
+
+.hero-sub{
+  margin-top:clamp(28px,4vh,44px);
+  max-width:520px;
+  font-size:clamp(15px,1.35vw,18px);
+  line-height:1.65;
+  color:var(--ink-dim);
+  opacity:0;transform:translateY(18px);
+  animation:fadeUp 1s var(--ease) var(--d) forwards;
+}
+.hero-sub em{font-family:var(--serif);font-style:italic;color:var(--ink);font-size:1.1em}
+
+.hero-actions{
+  margin-top:clamp(32px,4.5vh,52px);
+  display:flex;gap:14px;flex-wrap:wrap;
+  opacity:0;transform:translateY(18px);
+  animation:fadeUp 1s var(--ease) var(--d) forwards;
+}
+.btn{
+  position:relative;display:inline-flex;align-items:center;gap:10px;
+  padding:15px 30px;border-radius:100px;
+  font-size:14px;font-weight:600;letter-spacing:.01em;
+  transition:transform .45s var(--ease),background .35s,color .35s,border-color .35s,box-shadow .45s;
+  will-change:transform;
+  overflow:hidden;
+}
+.btn-primary{background:var(--white);color:#000}
+.btn-primary::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(105deg,#fff,#aaa,#666);
+  opacity:0;transition:opacity .45s var(--ease);
+}
+.btn-primary span{position:relative;z-index:1}
+.btn-primary:hover{box-shadow:0 14px 50px -12px rgba(255,255,255,.4)}
+.btn-primary:hover::after{opacity:1}
+.btn-ghost{border:1px solid var(--line-2);color:var(--ink)}
+.btn-ghost:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.05)}
+
+.hero-foot{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-faint);
+}
+.line-v{
+  width:1px;height:52px;display:block;
+  background:linear-gradient(to bottom,var(--ink-faint),transparent);
+  position:relative;overflow:hidden;
+}
+.line-v::after{
+  content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;
+  background:linear-gradient(to bottom,transparent,#fff);
+  animation:scrollHint 2.2s var(--ease-soft) infinite;
+}
+@keyframes scrollHint{0%{top:-100%}60%,100%{top:100%}}
+
+/* ============================================================
+   MARQUEE
+   ============================================================ */
+.marquee{
+  position:relative;z-index:2;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  overflow:hidden;padding:22px 0;
+  background:rgba(5,5,5,.4);
+  backdrop-filter:blur(6px);
+}
+.marquee-track{
+  display:flex;gap:44px;width:max-content;
+  animation:marquee 32s linear infinite;
+  will-change:transform;
+}
+.marquee-track span{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(24px,3.4vw,42px);
+  letter-spacing:-.02em;color:var(--ink-dim);
+  white-space:nowrap;
+}
+.marquee-track i{color:var(--gray);font-size:20px;font-style:normal;align-self:center}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ============================================================
+   SECTION BASE
+   ============================================================ */
+.section{
+  position:relative;z-index:2;
+  padding:clamp(90px,13vh,150px) clamp(20px,5vw,64px);
+  max-width:1320px;margin:0 auto;
+}
+.section-head{max-width:780px;margin-bottom:clamp(48px,7vh,80px)}
+.kicker{
+  display:inline-block;
+  font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gray);margin-bottom:22px;
+}
+.section-head h2{
+  font-size:clamp(34px,5.5vw,68px);
+  line-height:1.02;font-weight:500;letter-spacing:-.04em;
+}
+.section-head h2 em{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  color:var(--ink-dim);letter-spacing:-.02em;
+}
+.section-head p{
+  margin-top:22px;max-width:540px;font-size:clamp(15px,1.3vw,17px);
+  line-height:1.7;color:var(--ink-dim);
+}
+.section-head code{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:.88em;padding:2px 7px;border-radius:5px;
+  background:rgba(255,255,255,.06);color:var(--gray);
+  border:1px solid rgba(255,255,255,.10);
+}
+.reveal{opacity:0;transform:translateY(36px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ============================================================
+   PROMPT CARDS
+   ============================================================ */
+.prompt-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px);
+}
+.prompt-card{
+  position:relative;overflow:hidden;
+  padding:clamp(24px,2.4vw,34px);
+  border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(160deg,rgba(255,255,255,.03),rgba(255,255,255,.005));
+  cursor:none;
+  transition:transform .6s var(--ease),border-color .5s,background .5s;
+  opacity:0;transform:translateY(30px);
+  animation:cardIn .85s var(--ease) forwards;
+  animation-delay:calc(var(--i) * 70ms + .1s);
+  display:flex;flex-direction:column;min-height:250px;
+}
+@keyframes cardIn{to{opacity:1;transform:translateY(0)}}
+.prompt-card::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.10),transparent 62%);
+  opacity:0;transition:opacity .5s var(--ease);
+}
+.prompt-card::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  border:1px solid transparent;
+  background:linear-gradient(160deg,rgba(255,255,255,.5),transparent 45%) border-box;
+  -webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .5s var(--ease);
+}
+.prompt-card:hover{transform:translateY(-6px);background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.01))}
+.prompt-card:hover::before,.prompt-card:hover::after{opacity:1}
+
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:auto}
+.pc-num{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:11px;letter-spacing:.14em;color:var(--ink-faint);
+  padding-top:4px;
+}
+.pc-arrow{
+  font-size:20px;color:var(--ink-faint);line-height:1;
+  transition:transform .5s var(--ease),color .4s;
+}
+.prompt-card:hover .pc-arrow{transform:translate(4px,-4px);color:#fff}
+.pc-title{
+  margin-top:38px;
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(24px,2.1vw,30px);line-height:1.1;letter-spacing:-.02em;
+}
+.pc-desc{
+  margin-top:12px;font-size:14px;line-height:1.6;color:var(--ink-dim);
+  max-width:34ch;
+}
+.pc-cta{
+  margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-faint);
+  transition:color .4s;
+}
+.prompt-card:hover .pc-cta{color:#fff}
+
+/* ============================================================
+   BIBLIOTECA
+   ============================================================ */
+.lib-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  flex-wrap:wrap;margin-bottom:clamp(28px,4vh,44px);
+}
+.search{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 20px;border-radius:100px;
+  border:1px solid var(--line);background:rgba(255,255,255,.02);
+  transition:border-color .4s,background .4s;
+  flex:1;min-width:240px;max-width:420px;
+}
+.search:focus-within{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.04)}
+.search svg{width:17px;height:17px;color:var(--ink-faint);flex-shrink:0;transition:color .4s}
+.search:focus-within svg{color:#fff}
+.search input{
+  flex:1;background:none;border:0;outline:none;color:var(--ink);
+  font-family:var(--sans);font-size:14px;
+}
+.search input::placeholder{color:var(--ink-faint)}
+.lib-count{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:12px;letter-spacing:.1em;color:var(--ink-faint);
+  white-space:nowrap;
+}
+
+.lib-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:clamp(12px,1.4vw,18px);
+}
+.lib-card{
+  position:relative;overflow:hidden;
+  padding:clamp(22px,2vw,28px);
+  border:1px solid var(--line);border-radius:14px;
+  background:rgba(255,255,255,.015);
+  cursor:none;display:flex;flex-direction:column;
+  transition:transform .5s var(--ease),border-color .4s,background .4s;
+  opacity:0;transform:translateY(22px);
+  animation:cardIn .7s var(--ease) forwards;
+  animation-delay:calc(var(--i) * 50ms);
+  min-height:190px;
+}
+.lib-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,255,255,.35);
+  background:rgba(255,255,255,.04);
+}
+.lib-card.hide{display:none}
+.lc-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:18px;
+}
+.lc-num{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:11px;letter-spacing:.1em;color:var(--gray);opacity:.8;
+}
+.lc-words{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:10px;letter-spacing:.08em;color:var(--ink-faint);
+}
+.lc-title{
+  font-size:clamp(17px,1.5vw,20px);font-weight:500;line-height:1.25;
+  letter-spacing:-.015em;margin-bottom:10px;
+  overflow-wrap:anywhere;
+}
+.lc-excerpt{
+  font-size:13.5px;line-height:1.6;color:var(--ink-dim);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;margin-bottom:20px;
+}
+.lc-foot{
+  margin-top:auto;display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-faint);transition:color .4s,gap .4s;
+}
+.lib-card:hover .lc-foot{color:#fff;gap:14px}
+.lc-foot::after{content:'→'}
+
+.lib-status{
+  margin-top:34px;font-size:13px;color:var(--ink-faint);
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  letter-spacing:.04em;
+}
+
+/* empty state */
+.empty-state{
+  grid-column:1/-1;
+  border:1px dashed var(--line-2);border-radius:20px;
+  padding:clamp(40px,7vw,72px) clamp(24px,4vw,48px);
+  text-align:center;
+  background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.05),transparent 70%);
+  animation:cardIn .8s var(--ease) forwards;
+}
+.empty-state .es-icon{
+  font-size:36px;color:var(--gray);margin-bottom:18px;
+  display:inline-block;animation:bob 3.4s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.empty-state h3{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin-bottom:14px;
+}
+.empty-state p{
+  max-width:520px;margin:0 auto 26px;
+  font-size:14.5px;line-height:1.7;color:var(--ink-dim);
+}
+.empty-state code{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.86em;
+  padding:2px 7px;border-radius:5px;
+  background:rgba(255,255,255,.08);color:var(--gray);
+  border:1px solid rgba(255,255,255,.12);
+}
+.empty-state .drop-hint{
+  margin-top:22px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.lib-card.dragover,.empty-state.dragover{
+  border-color:#fff;
+  background:rgba(255,255,255,.06);
+}
+
+/* ============================================================
+   SOBRE
+   ============================================================ */
+.sobre-inner{
+  border-top:1px solid var(--line);padding-top:clamp(50px,7vh,80px);
+}
+.sobre-text{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(26px,4.2vw,52px);
+  line-height:1.22;letter-spacing:-.025em;
+  max-width:960px;color:var(--ink);
+}
+.sobre-text em{
+  font-style:normal;font-family:var(--sans);font-weight:500;
+  background:linear-gradient(105deg,#fff,#999);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.sobre-meta{
+  margin-top:clamp(44px,6vh,70px);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  border-top:1px solid var(--line);padding-top:32px;
+}
+.sobre-meta div{display:flex;flex-direction:column;gap:8px}
+.sobre-meta span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+.sobre-meta strong{font-size:15px;font-weight:500;color:var(--ink)}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{
+  position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  flex-wrap:wrap;
+  padding:44px clamp(20px,5vw,64px);
+  border-top:1px solid var(--line);
+  font-size:14px;color:var(--ink-faint);
+}
+.footer > span:first-child{font-weight:700;font-size:20px;color:var(--ink);letter-spacing:-.04em}
+.footer .dot{color:var(--gray)}
+.footer-note{font-family:var(--serif);font-style:italic;font-size:16px}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal{
+  position:fixed;inset:0;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(12px,3vw,32px);
+  visibility:hidden;opacity:0;
+  transition:visibility .4s,opacity .4s var(--ease);
+}
+.modal.open{visibility:visible;opacity:1}
+.modal-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.8);
+  backdrop-filter:blur(14px) saturate(1.3);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);
+}
+.modal-panel{
+  position:relative;
+  width:min(820px,100%);max-height:86vh;
+  display:flex;flex-direction:column;
+  background:linear-gradient(165deg,#111,#080808);
+  border:1px solid var(--line-2);border-radius:22px;
+  box-shadow:0 40px 120px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03) inset;
+  transform:translateY(28px) scale(.97);opacity:0;
+  transition:transform .6s var(--ease),opacity .5s var(--ease);
+  overflow:hidden;
+}
+.modal.open .modal-panel{transform:translateY(0) scale(1);opacity:1}
+.modal-head{
+  position:relative;
+  padding:clamp(24px,3vw,36px) clamp(24px,3vw,40px) 22px;
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
+}
+.modal-tag{
+  display:inline-block;
+  font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gray);
+  padding:5px 12px;border-radius:100px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+  margin-bottom:16px;
+}
+.modal-tag.lib{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)}
+.modal-head h3{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(24px,3.4vw,36px);line-height:1.12;letter-spacing:-.025em;
+  padding-right:44px;
+  overflow-wrap:anywhere;
+}
+.modal-close{
+  position:absolute;top:clamp(20px,3vw,30px);right:clamp(20px,3vw,32px);
+  width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;
+  border:1px solid var(--line-2);color:var(--ink-dim);
+  font-size:14px;
+  transition:transform .4s var(--ease),border-color .3s,color .3s,background .3s;
+}
+.modal-close:hover{transform:rotate(90deg);border-color:#fff;color:#fff;background:rgba(255,255,255,.1)}
+
+.modal-body{
+  padding:clamp(24px,3vw,36px) clamp(24px,3vw,40px);
+  overflow-y:auto;overscroll-behavior:contain;
+  flex:1;
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(15.5px,1.25vw,17.5px);
+  line-height:1.78;
+  color:#e0e0e0;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.modal-body::-webkit-scrollbar{width:8px}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px;border:2px solid #111}
+
+.modal-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:18px clamp(24px,3vw,40px);
+  border-top:1px solid var(--line);
+  background:rgba(255,255,255,.015);
+  flex-shrink:0;
+}
+.modal-info{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  font-size:11px;letter-spacing:.08em;color:var(--ink-faint);
+}
+.modal-copy{
+  padding:11px 22px;border-radius:100px;
+  border:1px solid var(--line-2);
+  font-size:12.5px;font-weight:600;letter-spacing:.02em;
+  transition:background .3s,border-color .3s,color .3s,transform .3s var(--ease);
+}
+.modal-copy:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.1);transform:translateY(-1px)}
+.modal-copy.ok{border-color:#fff;color:#fff;background:rgba(255,255,255,.15)}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+@media (max-width:960px){
+  .prompt-grid{grid-template-columns:repeat(2,1fr)}
+  .sobre-meta{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .prompt-grid{grid-template-columns:1fr}
+  .sobre-meta{grid-template-columns:1fr;gap:18px}
+  .nav-links a{font-size:13px}
+  .hero-actions .btn{flex:1;justify-content:center}
+  .hero-foot{display:none}
+  .prompt-card{min-height:220px}
+  .modal-panel{max-height:92vh;border-radius:18px}
+  .footer{font-size:12px;padding:32px 20px}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+  .hero-title .word{transform:none}
+  .hero-sub,.hero-actions,.eyebrow{opacity:1;transform:none}
+  .prompt-card,.lib-card{opacity:1;transform:none}
+  .reveal{opacity:1;transform:none}
+  #bg,.grain,.marquee-track{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="aurora" aria-hidden="true">
+  <span class="orb o1"></span>
+  <span class="orb o2"></span>
+  <span class="orb o3"></span>
+</div>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="logo" href="#top">CapimmPromptsAi<span>.</span></a>
+  <nav class="nav-links">
+    <a href="#prompts"><span>prompts</span></a>
+    <a href="#biblioteca"><span>biblioteca</span></a>
+    <a href="#sobre"><span>sobre</span></a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow" style="--d:.15s">estúdio de aprendizado · v2</p>
+      <h1 class="hero-title">
+        <span class="line" style="--d:.28s"><span class="word">ensine</span></span>
+        <span class="line" style="--d:.40s"><span class="word">a</span> <span class="word">máquina</span></span>
+        <span class="line" style="--d:.54s"><span class="word serif">a&nbsp;pensar</span></span>
+      </h1>
+      <p class="hero-sub" style="--d:.78s">
+        Prompts, textos e métodos para estudar <em>com</em> inteligência artificial —
+        sem terceirizar o pensamento.
+      </p>
+      <div class="hero-actions" style="--d:.94s">
+        <a href="#prompts" class="btn btn-primary" data-magnetic><span>explorar prompts</span></a>
+        <a href="#biblioteca" class="btn btn-ghost" data-magnetic><span>abrir biblioteca</span></a>
+      </div>
+    </div>
+    <div class="hero-foot" aria-hidden="true">
+      <span>scroll</span>
+      <i class="line-v"></i>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>ensinar</span><i>✳</i><span>aprender</span><i>✳</i><span>duvidar</span><i>✳</i>
+      <span>reescrever</span><i>✳</i><span>conectar</span><i>✳</i><span>revisar</span><i>✳</i>
+      <span>ensinar</span><i>✳</i><span>aprender</span><i>✳</i><span>duvidar</span><i>✳</i>
+      <span>reescrever</span><i>✳</i><span>conectar</span><i>✳</i><span>revisar</span><i>✳</i>
+    </div>
+  </div>
+
+  <!-- PROMPTS -->
+  <section id="prompts" class="section">
+    <div class="section-head reveal">
+      <span class="kicker">01 — prompts</span>
+      <h2>Seis formas de<br><em>abrir</em> uma cabeça.</h2>
+      <p>Cada prompt é um molde. Adapte, quebre, recombine. O objetivo não é a resposta — é o caminho até ela.</p>
+    </div>
+    <div class="prompt-grid" id="promptGrid"></div>
+  </section>
+
+  <!-- BIBLIOTECA -->
+  <section id="biblioteca" class="section">
+    <div class="section-head reveal">
+      <span class="kicker">02 — biblioteca</span>
+      <h2>Textos que a IA<br><em>precisa</em> ler.</h2>
+      <p>Arquivos <code>.txt</code> carregados direto da pasta <code>txts/</code> no repositório. Cada um vira uma peça que você pode abrir, ler e copiar.</p>
+    </div>
+
+    <div class="lib-toolbar reveal">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="text" placeholder="filtrar textos..." autocomplete="off" aria-label="filtrar textos">
+      </label>
+      <span class="lib-count" id="libCount">—</span>
+    </div>
+
+    <div class="lib-grid" id="libGrid"></div>
+    <div class="lib-status" id="libStatus">procurando textos…</div>
+  </section>
+
+  <!-- SOBRE -->
+  <section id="sobre" class="section sobre">
+    <div class="sobre-inner reveal">
+      <span class="kicker">03 — sobre</span>
+      <p class="sobre-text">
+        A IA não aprende como a gente.<br>
+        Mas a gente aprende <em>muito</em> quando tenta ensinar.<br>
+        Este lugar existe para esse intervalo —<br>
+        entre o que você sabe e o que consegue explicar.
+      </p>
+      <div class="sobre-meta">
+        <div><span>feito com</span><strong>html · css · js puro</strong></div>
+        <div><span>fonte dos textos</span><strong>pasta /txts (GitHub)</strong></div>
+        <div><span>zero dependências</span><strong>zero trackers</strong></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>CapimmPromptsAi<span class="dot">.</span></span>
+  <span class="footer-note">um lugar para pensar devagar</span>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <header class="modal-head">
+      <span class="modal-tag" id="modalTag">texto</span>
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" data-close aria-label="fechar">✕</button>
+    </header>
+    <div class="modal-body" id="modalBody"></div>
+    <footer class="modal-foot">
+      <span class="modal-info" id="modalInfo"></span>
+      <button class="modal-copy" id="modalCopy">copiar texto</button>
+    </footer>
+  </div>
+</div>
+
+<input type="file" id="folderInput" webkitdirectory directory multiple accept=".txt" hidden>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============================================================
+   DADOS DOS PROMPTS
+   ============================================================ */
+const PROMPTS = [
+  {
+    id:'01',
+    title:'Sócrates invertido',
+    desc:'Nada de respostas. Só perguntas que desmontam suas premissas.',
+    body:
+`Você é um interlocutor socrático. Não me dê respostas — faça perguntas.
+
+Tema: [TEMA]
+
+Regras:
+1. Faça uma pergunta por vez, curta e direta.
+2. A partir da minha resposta, identifique a premissa mais frágil e questione ela.
+3. Não elogie. Não resuma. Não explique antes de eu pedir.
+4. Se eu travar, ofereça duas perguntas — nunca a resposta.
+5. Ao final de 8 rodadas, escreva em uma frase onde meu raciocínio quebrou.
+
+Comece pela pergunta mais desconfortável.`
+  },
+  {
+    id:'02',
+    title:'Três altitudes',
+    desc:'O mesmo conceito em três níveis — sem repetir a metáfora.',
+    body:
+`Explique [CONCEITO] em três altitudes, na mesma resposta:
+
+1. Criança de 8 anos — uma analogia concreta, sem termos técnicos.
+2. Universitário — mecanismo, causa e efeito, vocabulário da área.
+3. Especialista — as tensões, os casos-limite e o que ainda está em disputa.
+
+Não use a mesma metáfora em duas altitudes.
+Termine com a pergunta que separa quem entendeu de quem decorou.`
+  },
+  {
+    id:'03',
+    title:'Advogado do diabo',
+    desc:'O ataque mais forte contra sua ideia — não o mais fácil de refutar.',
+    body:
+`Assuma o papel do crítico mais competente de [IDEIA / TEXTO].
+
+1. Liste os três ataques mais fortes que existem contra isso — não os mais fáceis de refutar.
+2. Para cada ataque, diga qual evidência o sustentaria.
+3. Depois, no papel de autor, responda cada ataque sem retórica.
+4. Diga qual ataque você não conseguiu responder e por quê.
+
+Sem equilíbrio artificial. Sem "por outro lado" automático.`
+  },
+  {
+    id:'04',
+    title:'Feynman reverso',
+    desc:'Você explica. A IA marca onde seu entendimento desmorona.',
+    body:
+`Vou explicar [CONCEITO] com minhas próprias palavras. Seu papel:
+
+1. Leia minha explicação e marque cada trecho onde eu uso uma palavra que não domino.
+2. Aponte as lacunas de causalidade — onde eu digo "acontece que" sem explicar o porquê.
+3. Faça três perguntas que só quem entendeu saberia responder.
+4. Só depois disso, ofereça uma explicação melhor — e mais curta que a minha.
+
+Não me poupe. Erro confortável não ensina.`
+  },
+  {
+    id:'05',
+    title:'Mapa antes do mapa',
+    desc:'Construa a estrutura antes de explicar o centro.',
+    body:
+`Antes de explicar [TEMA], construa o mapa:
+
+- Quais são os 5 conceitos fundamentais e como eles dependem entre si?
+- O que é pré-requisito do quê? Desenhe a ordem em texto.
+- Onde estão as bifurcações — pontos em que a compreensão popular erra?
+- Qual é o conceito que, se eu não entender, contamina todo o resto?
+
+Só então, explique o conceito central em até 200 palavras.`
+  },
+  {
+    id:'06',
+    title:'Síntese em camadas',
+    desc:'Do fio da tese ao contra-argumento que o autor não antecipou.',
+    body:
+`Recebi este texto: [COLE O TEXTO]
+
+Entregue em camadas, nesta ordem:
+
+1. Uma frase. (a tese, sem rodeio)
+2. Um parágrafo de 60 palavras. (o argumento)
+3. Cinco bullets. (a estrutura)
+4. Um contra-argumento de 40 palavras que o autor não antecipou.
+5. Uma pergunta que o texto deixa aberta.
+
+Não invente citações. Se algo não estiver no texto, diga "não está no texto".`
+  }
+];
+
+/* ============================================================
+   CURSOR + MAGNETISMO
+   ============================================================ */
+const cursor = $('#cursor');
+const cursorDot = $('#cursorDot');
+let cx = innerWidth / 2, cy = innerHeight / 2;
+let tx = cx, ty = cy;
+
+if (!matchMedia('(hover: none)').matches) {
+  addEventListener('mousemove', e => {
+    tx = e.clientX; ty = e.clientY;
+    cursorDot.style.transform = `translate(${tx}px, ${ty}px) translate(-50%,-50%)`;
+  });
+
+  (function loop() {
+    cx += (tx - cx) * 0.14;
+    cy += (ty - cy) * 0.14;
+    cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+
+  const hoverables = 'a, button, .prompt-card, .lib-card, .search input, [data-magnetic]';
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest(hoverables)) cursor.classList.add('hover');
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest(hoverables)) cursor.classList.remove('hover');
+  });
+}
+
+/* magnético */
+$$('[data-magnetic]').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    if (reduceMotion) return;
+    const r = el.getBoundingClientRect();
+    const mx = e.clientX - r.left - r.width / 2;
+    const my = e.clientY - r.top - r.height / 2;
+    el.style.transform = `translate(${mx * 0.18}px, ${my * 0.22}px)`;
+  });
+  el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+});
+
+/* ============================================================
+   CANVAS — partículas sutis (P&B)
+   ============================================================ */
+const canvas = $('#bg');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, dpr = Math.min(devicePixelRatio || 1, 2);
+let particles = [];
+let mouse = { x: -9999, y: -9999 };
+
+function resize() {
+  W = canvas.width = innerWidth * dpr;
+  H = canvas.height = innerHeight * dpr;
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  buildParticles();
+}
+function buildParticles() {
+  const count = Math.min(70, Math.floor((innerWidth * innerHeight) / 22000));
+  particles = Array.from({ length: count }, () => ({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    vx: (Math.random() - 0.5) * 0.22,
+    vy: (Math.random() - 0.5) * 0.22,
+    r: Math.random() * 1.6 + 0.5,
+    a: Math.random() * 0.5 + 0.18
+  }));
+}
+addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+addEventListener('mouseleave', () => { mouse.x = mouse.y = -9999; });
+addEventListener('resize', resize);
+resize();
+
+function draw() {
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+  for (let i = 0; i < particles.length; i++) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+
+    if (p.x < -20) p.x = innerWidth + 20;
+    if (p.x > innerWidth + 20) p.x = -20;
+    if (p.y < -20) p.y = innerHeight + 20;
+    if (p.y > innerHeight + 20) p.y = -20;
+
+    // repulsão suave do mouse
+    const dx = p.x - mouse.x, dy = p.y - mouse.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < 140 * 140 && d2 > 0.01) {
+      const d = Math.sqrt(d2);
+      const f = (140 - d) / 140 * 0.6;
+      p.x += (dx / d) * f;
+      p.y += (dy / d) * f;
+    }
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${p.a * 0.45})`;
+    ctx.fill();
+
+    // linhas
+    for (let j = i + 1; j < particles.length; j++) {
+      const q = particles[j];
+      const lx = p.x - q.x, ly = p.y - q.y;
+      const ld = lx * lx + ly * ly;
+      if (ld < 110 * 110) {
+        const alpha = (1 - Math.sqrt(ld) / 110) * 0.07;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(q.x, q.y);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(draw);
+}
+if (!reduceMotion) draw();
+
+/* ============================================================
+   SCROLL — nav + progresso + reveals
+   ============================================================ */
+const nav = $('#nav');
+const progress = $('#progress');
+
+function onScroll() {
+  const y = scrollY;
+  const h = document.documentElement.scrollHeight - innerHeight;
+  progress.style.width = (h > 0 ? (y / h) * 100 : 0) + '%';
+  nav.classList.toggle('scrolled', y > 40);
+}
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      en.target.classList.add('in');
+      io.unobserve(en.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+$$('.reveal').forEach(el => io.observe(el));
+
+/* ============================================================
+   RENDER PROMPTS
+   ============================================================ */
+const promptGrid = $('#promptGrid');
+
+PROMPTS.forEach((p, i) => {
+  const el = document.createElement('article');
+  el.className = 'prompt-card';
+  el.style.setProperty('--i', i);
+  el.innerHTML = `
+    <div class="pc-top">
+      <span class="pc-num">${p.id}</span>
+      <span class="pc-arrow">↗</span>
+    </div>
+    <h3 class="pc-title">${esc(p.title)}</h3>
+    <p class="pc-desc">${esc(p.desc)}</p>
+    <span class="pc-cta">abrir prompt</span>
+  `;
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+  el.addEventListener('click', () => openModal({
+    tag: 'prompt',
+    tagClass: '',
+    title: p.title,
+    body: p.body,
+    info: `template · adapte as variáveis · ${p.body.length} caracteres`
+  }));
+  promptGrid.appendChild(el);
+});
+
+/* ============================================================
+   BIBLIOTECA — carregamento automático via GitHub API
+   ============================================================ */
+const libGrid = $('#libGrid');
+const libStatus = $('#libStatus');
+const libCount = $('#libCount');
+const searchInput = $('#search');
+const folderInput = $('#folderInput');
+
+const state = { texts: [], current: null };
+
+function setStatus(msg) { libStatus.textContent = msg; }
+
+/* Configuração do repositório (pode ser extraída da URL) */
+const REPO_OWNER = 'capimmm';
+const REPO_NAME = 'PromptsAi';
+const TXT_DIR = 'txts';
+
+async function fetchJSON(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function autoLoad() {
+  setStatus('procurando textos em /txts…');
+
+  let files = [];
+
+  // 1) Tenta manifest.json (opcional)
+  try {
+    const manifest = await fetchJSON(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${TXT_DIR}/manifest.json`);
+    if (Array.isArray(manifest)) files = manifest;
+  } catch { /* ignora */ }
+
+  // 2) Se não houver manifest, usa a API do GitHub para listar os arquivos
+  if (!files.length) {
+    try {
+      const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TXT_DIR}`;
+      const data = await fetchJSON(apiUrl);
+      if (Array.isArray(data)) {
+        files = data
+          .filter(item => item.type === 'file' && item.name.endsWith('.txt'))
+          .map(item => item.name);
+      }
+    } catch (err) {
+      console.warn('Falha ao listar via API:', err);
+    }
+  }
+
+  // 3) Se ainda não houver arquivos, tenta nomes comuns
+  if (!files.length) {
+    files = ['addRefined.txt', 'adptar.txt', 'alt1.txt', 'estudar.txt', 'starte.txt'];
+  }
+
+  if (!files.length) {
+    state.texts = [];
+    renderLibrary();
+    return;
+  }
+
+  setStatus(`carregando ${files.length} arquivo(s)…`);
+
+  const results = await Promise.all(files.map(async name => {
+    try {
+      const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${TXT_DIR}/${encodeURIComponent(name)}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const text = await res.text();
+      return { name, text };
+    } catch {
+      return null;
+    }
+  }));
+
+  const found = results.filter(Boolean);
+  if (found.length) {
+    buildFromList(found);
+  } else {
+    state.texts = [];
+    renderLibrary();
+  }
+}
+
+/* ---------- helpers de leitura ---------- */
+function prettifyName(name) {
+  return name
+    .replace(/\.txt$/i, '')
+    .replace(/^txts\//, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\p{L}/gu, c => c.toUpperCase());
+}
+
+function deriveTitle(name, text) {
+  const firstLine = (text.split(/\r?\n/).find(l => l.trim()) || '').trim();
+  if (firstLine.length > 3 && firstLine.length <= 68 && !/[.!?]$/.test(firstLine)) {
+    return firstLine.replace(/^#+\s*/, '');
+  }
+  return prettifyName(name);
+}
+
+function makeExcerpt(text) {
+  return text.replace(/\s+/g, ' ').trim().slice(0, 190);
+}
+
+function countWords(text) {
+  const t = text.trim();
+  if (!t) return 0;
+  return t.split(/\s+/).length;
+}
+
+function buildFromList(list) {
+  state.texts = list.map((item, i) => ({
+    id: i,
+    name: item.name,
+    title: deriveTitle(item.name, item.text),
+    text: item.text,
+    excerpt: makeExcerpt(item.text),
+    words: countWords(item.text)
+  }));
+  renderLibrary();
+}
+
+/* ---------- renderização da biblioteca ---------- */
+function renderLibrary() {
+  const q = searchInput.value.trim().toLowerCase();
+  libGrid.innerHTML = '';
+
+  if (!state.texts.length) {
+    renderEmpty();
+    libCount.textContent = '—';
+    return;
+  }
+
+  const filtered = state.texts.filter(t =>
+    !q ||
+    t.title.toLowerCase().includes(q) ||
+    t.excerpt.toLowerCase().includes(q) ||
+    t.name.toLowerCase().includes(q)
+  );
+
+  libCount.textContent = filtered.length + (filtered.length === 1 ? ' texto' : ' textos');
+
+  if (!filtered.length) {
+    libGrid.innerHTML = `<div class="empty-state">
+      <span class="es-icon">◌</span>
+      <h3>nada encontrado</h3>
+      <p>Nenhum texto corresponde a "<strong>${esc(q)}</strong>".</p>
+    </div>`;
+    setStatus('tente outro termo de busca');
+    return;
+  }
+
+  filtered.forEach((t, i) => {
+    const card = document.createElement('article');
+    card.className = 'lib-card';
+    card.style.setProperty('--i', i);
+    card.innerHTML = `
+      <div class="lc-top">
+        <span class="lc-num">${String(t.id + 1).padStart(2, '0')}</span>
+        <span class="lc-words">${t.words} palavras</span>
+      </div>
+      <h3 class="lc-title">${esc(t.title)}</h3>
+      <p class="lc-excerpt">${esc(t.excerpt)}</p>
+      <span class="lc-foot">ler texto</span>
+    `;
+    card.addEventListener('click', () => openText(t));
+    libGrid.appendChild(card);
+  });
+
+  setStatus(`${state.texts.length} arquivo(s) carregado(s) da pasta txts/`);
+}
+
+function renderEmpty() {
+  libGrid.innerHTML = `
+    <div class="empty-state" id="emptyState">
+      <span class="es-icon">✳</span>
+      <h3>a pasta está vazia</h3>
+      <p>
+        Crie uma pasta <code>txts/</code> ao lado deste arquivo e coloque seus
+        <code>.txt</code> dentro. Ou clique abaixo para escolher a pasta manualmente —
+        funciona até abrindo o site direto do disco.
+      </p>
+      <button class="btn btn-ghost" id="pickFolder" style="cursor:none">
+        <span>escolher pasta txts/</span>
+      </button>
+      <div class="drop-hint">ou arraste os .txt aqui</div>
+    </div>
+  `;
+  $('#pickFolder').addEventListener('click', () => folderInput.click());
+  setStatus('nenhum texto encontrado — use o botão acima');
+  libCount.textContent = '0 textos';
+}
+
+/* ---------- leitura via arquivos locais (fallback) ---------- */
+function readFiles(fileList) {
+  const files = [...fileList].filter(f => /\.txt$/i.test(f.name));
+  if (!files.length) { setStatus('nenhum arquivo .txt encontrado'); return; }
+
+  setStatus('lendo ' + files.length + ' arquivo(s)…');
+  const readers = files.map(file => new Promise(resolve => {
+    const fr = new FileReader();
+    fr.onload = () => resolve({ name: file.name, text: String(fr.result || '') });
+    fr.onerror = () => resolve(null);
+    fr.readAsText(file, 'utf-8');
+  }));
+
+  Promise.all(readers).then(results => {
+    const list = results.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+    if (!list.length) { setStatus('não foi possível ler os arquivos'); return; }
+    buildFromList(list);
+  });
+}
+
+folderInput.addEventListener('change', e => {
+  readFiles(e.target.files);
+  folderInput.value = '';
+});
+
+/* drag & drop */
+['dragenter', 'dragover'].forEach(ev =>
+  libGrid.addEventListener(ev, e => {
+    e.preventDefault();
+    libGrid.querySelectorAll('.lib-card, .empty-state').forEach(el => el.classList.add('dragover'));
+  })
+);
+['dragleave', 'drop'].forEach(ev =>
+  libGrid.addEventListener(ev, e => {
+    e.preventDefault();
+    libGrid.querySelectorAll('.lib-card, .empty-state').forEach(el => el.classList.remove('dragover'));
+  })
+);
+libGrid.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer?.files?.length) readFiles(e.dataTransfer.files);
+});
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+const modal = $('#modal');
+const modalTag = $('#modalTag');
+const modalTitle = $('#modalTitle');
+const modalBody = $('#modalBody');
+const modalInfo = $('#modalInfo');
+const modalCopy = $('#modalCopy');
+
+function openModal({ tag, tagClass = '', title, body, info }) {
+  modalTag.textContent = tag;
+  modalTag.className = 'modal-tag' + (tagClass ? ' ' + tagClass : '');
+  modalTitle.textContent = title;
+  modalBody.textContent = body;
+  modalInfo.textContent = info;
+  state.current = body;
+
+  modalCopy.textContent = 'copiar texto';
+  modalCopy.classList.remove('ok');
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  modalBody.scrollTop = 0;
+}
+
+function openText(t) {
+  openModal({
+    tag: 'texto',
+    tagClass: 'lib',
+    title: t.title,
+    body: t.text,
+    info: `${t.name} · ${t.words} palavras · ${t.text.length} caracteres`
+  });
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+$$('[data-close]').forEach(el => el.addEventListener('click', closeModal));
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+});
+
+modalCopy.addEventListener('click', async () => {
+  if (!state.current) return;
+  const original = state.current;
+  try {
+    await navigator.clipboard.writeText(original);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = original;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch {}
+    ta.remove();
+  }
+  modalCopy.textContent = 'copiado ✓';
+  modalCopy.classList.add('ok');
+  setTimeout(() => {
+    modalCopy.textContent = 'copiar texto';
+    modalCopy.classList.remove('ok');
+  }, 1800);
+});
+
+/* ============================================================
+   BUSCA
+   ============================================================ */
+let searchTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderLibrary, 120);
+});
+
+/* ============================================================
+   START
+   ============================================================ */
+autoLoad();
+
+})();
+</script>
+</body>
+</html>
