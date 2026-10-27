@@ -1,0 +1,72 @@
+PERSONA E CONTEXTO
+Assuma o papel de Engenheiro de UI/UX Sênior especializado em Cross-Platform na Roblox. O seu objetivo é pegar a interface "Arcade Neon" (com Painel Esquerdo, Painel Direito e Barra Inferior) e transformá-la em uma UI 100% responsiva, garantindo que ela seja perfeita e jogável em PC, Celular (Portrait e Landscape) e Console (Xbox/PlayStation). Nenhum elemento pode ficar cortado, sobreposto ou inacessível.
+
+ÁREA DE ESTUDO 1: ARQUITETURA RESPONSIVA (O BÁSICO BEM FEITO)
+
+Constraints Obrigatórios: Todo Frame principal deve ter um UIAspectRatioConstraint para não distorcer. Use UISizeConstraint (MinSize e MaxSize) em botões para que não fiquem gigantes no PC 4K nem minúsculos em celulares antigos.
+
+Ancoragem e Escala: Use exclusivamente UDim2.fromScale() para dimensionamento (evite Offset para tamanhos fixos). Use AnchorPoint = Vector2.new(0.5, 0.5) para centralizar.
+
+Safe Area (Área Segura): No Roblox, celulares têm "notch" e barras de navegação. Adicione um UIPadding global no ScreenGui usando as propriedades ScreenInsets (CoreUISafeInsets) e ClipToDeviceSafeArea = true para que nada fique escondido atrás da câmera do celular.
+
+Viewport Dinâmico: Crie um script que escuta Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize") para ajustar o layout dinamicamente quando o jogador gira o celular ou redimensiona a janela do PC.
+
+ÁREA DE ESTUDO 2: ADAPTAÇÃO VISUAL POR DISPOSITIVO
+
+PC (Landscape Amplo): Mantenha o layout original (Painel Esquerdo, Painel Direito e Barra inferior). Use o espaço extra para dar mais respiro (padding).
+
+Mobile (Portrait - Celular em pé): O layout de 3 colunas não funciona bem. Altere dinamicamente:
+
+Empilhe os painéis: O Painel Esquerdo (Visualizador) fica no topo, o Painel Direito (Grade) vira um ScrollingFrame no meio, e a Barra Inferior fica fixa no fundo.
+
+Botões devem ter no mínimo 44x44 pixels (tamanho de toque confortável para dedos).
+
+Mobile (Landscape - Celular deitado): Similar ao PC, mas diminua as margens (padding) laterais para aproveitar a tela pequena.
+
+Console (TV): O tamanho da tela é grande, mas o jogador está longe. Aumente em 15% o tamanho das fontes (TextSize) e a espessura do UIStroke para melhor legibilidade à distância.
+
+ÁREA DE ESTUDO 3: SISTEMA DE INPUT E SELEÇÃO (MUITO IMPORTANTE)
+
+Console (Gamepad): O jogador usa o D-Pad e os analógicos.
+
+Crie um GuiService e configure o SelectionGroup.
+
+Todos os botões devem ter Selectable = true.
+
+Defina o caminho de navegação (ex: NextSelectionRight, NextSelectionDown) para que o D-Pad navegue logicamente: do Painel Esquerdo para o Direito, e depois para a Barra Inferior.
+
+Adicione um SelectionImageObject (um Frame com borda brilhante/animada) para que o jogador saiba qual botão está selecionado.
+
+Touch (Celular):
+
+Use UserInputService.TouchEnabled.
+
+Adicione um feedback visual instantâneo ao toque (InputBegan com UserInputType.Touch), pois não há "hover" (passar o mouse) no celular.
+
+Aumente o UIPadding entre os botões da grade (no mínimo 10px de distância) para evitar cliques acidentais (fat finger).
+
+Mouse/Teclado (PC):
+
+Mantenha o MouseEnter e MouseLeave para os efeitos de Hover (aumentar o botão levemente).
+
+Adicione atalhos de teclado (opcional): Pressionar "E" para Claim, "B" para Buy.
+
+ÁREA DE ESTUDO 4: TÉCNICAS AVANÇADAS DE OTIMIZAÇÃO
+
+Detecção de Dispositivo: Use UserInputService.TouchEnabled e UserInputService.GamepadEnabled para carregar layouts diferentes sem precisar reiniciar o jogo.
+
+Desempenho Mobile: No celular, desative sombras (UIShadow) ou reduza a qualidade dos UIGradient se UserInputService.TouchEnabled for verdadeiro e o dispositivo for de baixo custo (use UserInputService:GetLastInputType()).
+
+Evite Offset em Texto: Use TextScaled = true dentro de botões, mas limite com um UITextSizeConstraint (MinTextSize: 14, MaxTextSize: 24) para que o texto não fique gigante ou ilegível.
+
+ENTREGÁVEIS (O QUE VOCÊ DEVE CODAR)
+
+Script de Responsividade (ResponsiveController): Um LocalScript que monitora a resolução (Camera.ViewportSize) e aplica UISizeConstraint, UIPadding e muda a posição dos painéis (de lado para empilhado) dependendo se a tela está em modo Retrato (X < Y) ou Paisagem (X > Y).
+
+Setup de Gamepad: Código que define os SelectionGroups e a ordem de navegação (NextSelectionUp, NextSelectionDown, etc.) para os botões.
+
+Animação de Seleção: Crie um ImageLabel ou Frame (o "cursor" do console) que salta suavemente entre os botões quando o jogador navega com o D-Pad.
+
+Código de Toque: Função para garantir que no mobile, o clique seja registrado no InputEnded (soltar o dedo) e não apenas no Activated.
+
+Tabela de Configuração: Uma tabela no topo do script onde o desenvolvedor pode facilmente mudar PaddingMobile, PaddingConsole e FontSizePC sem mexer na lógica.
