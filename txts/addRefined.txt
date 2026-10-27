@@ -1,0 +1,99 @@
+PERSONA E CONTEXTO
+Atue como um Engenheiro de UI/UX Sênior e especialista em Luau para Roblox Studio. Sua tarefa é criar, do zero via código (programaticamente), uma interface de usuário (GUI) complexa, estilo "Arcade Neon / Glassmorphism", baseada em um layout de painel de controle e loja. O código deve ser modular, altamente otimizado, sem vazamentos de memória (memory leaks) e com animações fluidas.
+
+DIRETRIZES DE DESIGN VISUAL (REFERÊNCIA)
+A UI deve ter um fundo escuro (Background Color3: #1A1A1A), com painéis que usam UICorner (arredondamento acentuado, ex: 0.15 na escala) e bordas grossas e brilhantes usando UIStroke (cor branca, espessura 2-3, ApplyStrokeMode em Contextual). O design usa gradientes vibrantes e saturados.
+
+Divida a interface em três seções principais (use Frame para tudo):
+
+1. Painel Esquerdo (Visualizador Principal):
+
+Dimensões: Ocupa cerca de 45% da tela. Posicionado à esquerda.
+
+Header: Um Frame no topo com gradiente azul-ciano (UIGradient de #00FFFF a #0055FF). Texto "Header" em branco, fonte GothamBold, à esquerda. No canto direito, um TextButton de fechar vermelho (#FF3333) com o ícone "X" (pode usar texto ou ImageLabel com rbxassetid://6031094667).
+
+Corpo: Um Frame grande abaixo do header, cor cinza-escuro azulado (#1E2530), com bordas azuis (UIStroke).
+
+Rodapé do Painel: Abaixo do corpo, um TextButton verde-limão vibrante com o texto "CLAIM" em branco e fonte grossa. Ao lado, um botão "X" vermelho. Ambos com UICorner e UIStroke branco.
+
+2. Painel Direito (Grade de Itens/Recompensas):
+
+Dimensões: Ocupa cerca de 40% da tela. Posicionado à direita.
+
+Layout: Use um UIGridLayout com CellPadding de (0.05, 0.05) e CellSize em escala para organizar 7 itens.
+
+Item de Saldo (Topo Esquerdo): Um Frame azul escuro com o texto "25K$" em verde neon. Inclua um ImageLabel pequeno ao lado (ícone de moeda, rbxassetid://6023426926).
+
+Blocos de Gradiente (Texturas de Cor): Crie 6 Frames com UICorner e UIStroke branco. Cada um deve ter um UIGradient representando:
+
+Vermelho (#FF0000 a #880000)
+
+Laranja (#FFA500 a #FF4500)
+
+Roxo (#8A2BE2 a #4B0082)
+
+Verde Limão (#32CD32 a #006400)
+
+Ciano (#00FFFF a #008B8B)
+
+Arco-Íris: Um UIGradient com ColorSequence de 7 cores (Vermelho, Laranja, Amarelo, Verde, Azul, Anil, Violeta). BÔNUS: Anime o Offset deste UIGradient via script para que as cores se movam continuamente.
+
+3. Barra Inferior (Navegação):
+
+Dimensões: Barra horizontal na parte inferior, ocupando 90% da largura.
+
+Botões: Três TextButtons grandes com UICorner e UIStroke branco espesso:
+
+"Buy": Gradiente Verde (#00FF00 a #008000).
+
+"Home": Gradiente Azul (#00FFFF a #0000FF).
+
+"Sell": Gradiente Laranja/Amarelo (#FFD700 a #FF8C00).
+
+Texto: Fonte GothamBlack, cor branca, com um leve TextStrokeTransparency = 0.5 para destaque.
+
+ESPECIFICAÇÕES TÉCNICAS E OTIMIZAÇÃO (MUITO IMPORTANTE)
+
+Responsividade: Use AnchorPoint = Vector2.new(0.5, 0.5) e dimensões UDim2.fromScale() para os painéis principais. Adicione UIAspectRatioConstraint em todos os botões e itens da grade para evitar distorção em telas diferentes (celular vs PC).
+
+Hierarquia: Organize tudo dentro de um ScreenGui chamado ArcadeUI. Use um Frame central chamado MainContainer para agrupar tudo.
+
+Animações (TweenService):
+
+Crie uma função modular AnimateButton(button). No MouseEnter, use TweenService para aumentar o tamanho para 1.05 em 0.15s com Enum.EasingStyle.Back e Enum.EasingDirection.Out. No MouseLeave, retorne ao normal. No MouseButton1Down, encolha para 0.95 com Enum.EasingStyle.Quad.
+
+Abertura da UI: Ao iniciar, anime o MainContainer de Size = UDim2.fromScale(0,0) para o tamanho final com EasingStyle.Quint.
+
+Efeitos de UI: Use UICorner agressivo (ex: 0.1 a 0.2 na escala) para um visual moderno. Para os gradientes, use UIGradient com Rotation = 90 (vertical) ou 0 (horizontal).
+
+Texturas/Ícones: Peça ao Claude para usar ImageLabel para os ícones dentro dos botões. Exemplo de IDs:
+
+Ícone "X" de fechar: rbxassetid://6031094667
+
+Ícone de "Moeda": rbxassetid://6023426926
+
+Ícone de "Carrinho" (Buy): rbxassetid://6031091004
+
+Ícone de "Casa" (Home): rbxassetid://6031094674
+
+BIBLIOTECAS E MÓDULOS (RECOMENDADO)
+
+Em vez de scripts soltos, crie uma estrutura de Módulos para o Claude:
+
+UIManager.lua: Para gerenciar a criação e visibilidade da UI.
+
+TweenWrapper.lua: Um módulo que encapsula o TweenService para facilitar animações complexas e cancelamento de tweens antigos.
+
+Maid.lua (ou Trove): Implemente um sistema de limpeza (Garbage Collection) para desconectar eventos (MouseEnter, MouseLeave) e destruir tweens quando a UI for fechada ou o jogador sair, evitando memory leaks.
+
+ENTREGÁVEIS ESPERADOS
+
+Um LocalScript principal (ex: UIInitializer.client.luau) que constrói toda a hierarquia de UI.
+
+O código de construção deve ser limpo, comentado e usar tabelas de configuração para cores e tamanhos.
+
+A função de animação AnimateButton deve ser robusta e aplicar também um efeito de "Hover" (ex: mudar a cor do UIStroke para um tom mais claro ou adicionar um UIShadow).
+
+Um módulo TweenWrapper que use TweenService:Create e gerencie a propriedade Cancel().
+
+Explique brevemente como testar a UI no Roblox Studio (ex: colocar o script no StarterPlayerScripts).
