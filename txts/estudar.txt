@@ -1,0 +1,71 @@
+PERSONA E MISSÃO
+Assuma o papel de um Arquiteto de UI/UX e Engenheiro de Software Sênior da Roblox. Sua missão é projetar e programar um sistema de interface completo, escalável e modular para um jogo do gênero Tycoon/Simulator. O objetivo não é apenas criar a UI visual, mas sim um sistema de UI robusto que lide com estados do jogo, animações fluidas, feedback sensorial (áudio), responsividade e código limpo (Clean Code).
+
+ÁREA DE ESTUDO 1: DESIGN SYSTEM & LAYOUT VISUAL
+A interface deve seguir o estilo "Arcade Neon/Glassmorphism", dividida em um ScreenGui principal.
+
+Cores Base: Fundo escuro (#1A1A1A a #0D1117). Bordas neon (#5A32A8 ou #00FFFF).
+
+Componentes de Estilo: Use UICorner agressivo (0.15 a 0.2), UIStroke duplo (uma borda branca interna fina e uma borda roxa/azul externa mais grossa), e UIGradient para dar profundidade.
+
+Tipografia: Use GothamBold ou Montserrat para números e títulos. Use GothamBlack para botões principais, com TextStrokeTransparency = 0.5 para legibilidade.
+
+ÁREA DE ESTUDO 2: ARQUITETURA DE SOFTWARE (MVC)
+Não escreva tudo em um único script. Estruture usando o padrão Model-View-Controller (MVC) básico para Roblox:
+
+UI_Controller: Gerencia os dados (ex: saldo do jogador, itens comprados).
+
+UI_View: Responsável APENAS por construir os frames visuais e escutar eventos.
+
+UI_Service: Módulo que lida com a lógica de negócios (ex: função PurchaseItem(itemId)).
+
+Data Binding: Crie um mock (simulação) de um sistema reativo. Quando o valor da variável PlayerCash mudar no Controller, o texto "25K$" na View deve atualizar suavemente (com um Tween de escala/brilho) sem precisar de loops.
+
+ÁREA DE ESTUDO 3: O LAYOUT DETALHADO (A IMAGEM)
+
+Painel Esquerdo (Visualizador): Frame grande com Header gradiente azul/ciano, botão fechar (X) vermelho, corpo cinza azulado e botões "CLAIM" (verde neon) e "X" no rodapé.
+
+Painel Direito (Grade de Itens): UIGridLayout (2 colunas). O primeiro item é o saldo "25K$" com ícone de moeda. Os outros 6 são Frames com gradientes estáticos (Vermelho, Laranja, Roxo, Verde, Ciano) e um Arco-Íris animado.
+
+Barra Inferior (Navegação): Botões "Buy" (Verde), "Home" (Azul), "Sell" (Laranja). Todos com gradientes vibrantes e bordas brancas.
+
+ÁREA DE ESTUDO 4: FEEDBACK SENSORIAL E "JUICE" (ÁUDIO E HAPTICS)
+A UI deve parecer "viva".
+
+Áudio: Adicione Sound instances dentro dos botões. Ex: Som de Hover (um "tick" suave), Som de Click (um "pop" satisfatório). Peça ao Claude para usar IDs de som reais do Roblox ou placeholders (ex: rbxassetid://12345678).
+
+Haptics (Mobile): Para jogadores mobile, use HapticService para vibrar levemente o celular ao clicar em botões de compra.
+
+Animações Elásticas: Use TweenService com Enum.EasingStyle.Back para hover e Enum.EasingStyle.Elastic para a abertura do painel. Adicione um efeito de "Pulsar" (Scale infinito de 1 para 1.02) no botão "CLAIM" para chamar a atenção.
+
+Gradiente Arco-Íris: Use um RunService.RenderStepped ou um loop task.spawn otimizado para animar o UIGradient.Offset.X do botão arco-íris continuamente.
+
+ÁREA DE ESTUDO 5: RESPONSIVIDADE E ACESSIBILIDADE (MUITO IMPORTANTE)
+
+Mobile vs PC: A UI deve ser flexível. Use UIAspectRatioConstraint para não distorcer. Para telas pequenas (Mobile), a RightPanel deve mudar de lado ou virar um ScrollingFrame vertical.
+
+Gamepad: Adicione suporte a controle (Gamepad) usando GuiService e SelectionGroup. O jogador deve conseguir navegar pelos botões apertando o D-Pad.
+
+Acessibilidade: Garanta que o contraste das cores seja alto o suficiente para pessoas com daltonismo.
+
+ÁREA DE ESTUDO 6: OTIMIZAÇÃO EXTREMA E BIBLIOTECAS
+
+Limpador de Memória (Trove): Instrua o Claude a criar um módulo Trove simples (ou usar a lógica dele). Quando a UI for fechada ou o jogador morrer, TODOS os eventos (MouseEnter, MouseLeave), tweens ativos e sons devem ser desconectados e destruídos imediatamente.
+
+Tipagem Estrita: Todo o código Luau deve usar --!strict e tipagem (type ButtonConfig = { Name: string, Color: Color3 }) para evitar erros.
+
+UIStroke vs UIGradient: O Claude deve saber que aplicar UIGradient em textos com TextStroke causa perda de performance. Ele deve usar UIStroke separado para textos.
+
+ENTREGÁVEIS DETALHADOS (O QUE O CLAUDE DEVE CUSPIR)
+
+Hierarquia Completa: Uma árvore de texto mostrando como os objetos estão organizados no Explorer (ex: ScreenGui > Main > LeftPanel > Header).
+
+Script Principal (UI_Controller): O script que inicializa tudo, cria os frames e aplica os estilos (sem usar o editor visual, tudo via código).
+
+Módulo de Animação: Funções reutilizáveis para Hover, Click, Pulse e Rainbow Gradient.
+
+Módulo de Áudio: Função para tocar sons de UI.
+
+Tabela de IDs de Ícones e Sons: Uma lista de rbxassetid recomendados para os botões (Fechar, Moeda, Comprar, Vender, Home).
+
+Instruções de Instalação: Onde colocar cada script no StarterPlayerScripts e ReplicatedStorage.
