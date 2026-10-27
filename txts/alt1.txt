@@ -1,0 +1,94 @@
+PERSONA E DIRETRIZES GERAIS
+Assuma o papel de um Engenheiro Principal de UI/UX da Roblox. Sua missão é escrever o código Luau completo (LocalScript + Módulos) para construir, programaticamente, uma interface de usuário idêntica à descrição visual abaixo. O estilo é "Arcade Retrô Moderno": cores saturadas, gradientes vibrantes, bordas grossas (cartoon), cantos arredondados e animações "juicy" (satisfatórias e responsivas).
+
+1. ESTRUTURA DE HIERARQUIA E LAYOUT (MUITO IMPORTANTE)
+Tudo deve ser filho de um ScreenGui chamado ArcadeUI (IgnoreGuiInset = true).
+Crie um Frame central chamado MainContainer (Size: UDim2.fromScale(0.8, 0.7), AnchorPoint: 0.5, 0.5, Position: 0.5, 0.5). Adicione UIAspectRatioConstraint (AspectRatio: 1.6) para manter a proporção em qualquer tela.
+
+Divida o MainContainer em 3 áreas usando Frame:
+
+LeftPanel (Size: 0.45, 1, Position: 0, 0): O visualizador principal.
+
+RightPanel (Size: 0.5, 0.65, Position: 0.5, 0): A grade de botões/itens.
+
+BottomBar (Size: 1, 0.25, Position: 0, 0.75): A barra de navegação.
+
+2. DESIGN VISUAL EXATO (CÓPIE AS CORES E PROPRIEDADES)
+
+A. LeftPanel (Visualizador Principal):
+
+Fundo do painel: BackgroundColor3 = Color3.fromRGB(25, 30, 45) (Azul escuro). Adicione um UIStroke (Color: #5A32A8, Thickness: 4) e UICorner (Scale: 0.1).
+
+Header: Um Frame no topo (Size: 1, 0.15). UIGradient (Rotation: 0, de #00FFFF a #0088FF). Texto "Header" (Font: GothamBold, TextColor: White, TextXAlignment: Left, Padding esquerdo).
+
+Botão Fechar: TextButton no canto direito do Header (Size: 0.1, 0.6). BackgroundColor3 = Color3.fromRGB(255, 50, 50), UICorner = 0.2, UIStroke (White, Thickness: 2). Texto "X" (Bold).
+
+Corpo: Frame (Size: 1, 0.7, Position: 0, 0.15). Cor: Color3.fromRGB(30, 40, 55). Adicione UIStroke (Color: #3A5A8A, Thickness: 2) e UICorner (0.05).
+
+Rodapé (Botões Claim e X): Frame abaixo do corpo.
+
+Botão "CLAIM": TextButton verde (Gradient de #00FF00 a #008800), UICorner = 0.2, UIStroke (White, Thickness: 3). Texto branco, fonte GothamBlack, com TextStrokeTransparency = 0.5.
+
+Botão "X": Vermelho (#FF3333), borda branca grossa.
+
+B. RightPanel (Grade de Itens):
+
+Use UIGridLayout (CellSize: 0.45, 0.2, CellPadding: 0.05, 0.05).
+
+**Item 25K" (#00FF00, GothamBlack). Adicione um ImageLabel ao lado do texto com o ícone de moeda (ID: rbxassetid://6023426926).
+
+Blocos Coloridos (6 itens): Crie Frames com UICorner = 0.2 e UIStroke (White, Thickness: 3). Todos precisam de um "outer stroke" roxo (#5A32A8, Thickness: 5) para dar o efeito de borda dupla da imagem.
+
+Item 1 (Topo Dir.): Gradiente Vermelho/Rosa (#FF0055 a #FF8888).
+
+Item 2: Gradiente Laranja/Amarelo (#FFAA00 a #FFDD00).
+
+Item 3: Gradiente Roxo (#6600FF a #AA00FF).
+
+Item 4: Gradiente Verde (#00FF00 a #55FF55).
+
+Item 5: Gradiente Ciano (#00FFFF a #55FFFF).
+
+Item 6 (Arco-Íris): UIGradient com ColorSequence de 6 cores (Vermelho, Amarelo, Verde, Ciano, Azul, Roxo). NOTA: Adicione um script para animar o Offset desse gradiente (rotação infinita).
+
+C. BottomBar (Barra de Navegação):
+
+Fundo: Color3.fromRGB(10, 20, 60). UICorner = 0.2, UIStroke (Roxo #5A32A8, Thickness: 4).
+
+Crie 3 TextButtons (Size: 0.3, 0.6, AnchorPoint: 0.5, 0.5). Todos com UIStroke branco (Thickness: 3) e UICorner = 0.2.
+
+"Buy": Gradiente #AAFF00 a #00AA00. "Home": Gradiente #00FFFF a #0055FF. "Sell": Gradiente #FFDD00 a #FF8800. Texto branco, GothamBlack.
+
+3. ANIMAÇÕES E OTIMIZAÇÃO (UI JUICE)
+
+Biblioteca Recomendada: Estruture o código usando o padrão do Trove (ou Maid) para limpar conexões de eventos e Tweens mortos. Se não puder usar módulos externos, escreva uma classe Cleaner simples.
+
+Hover Effect: No MouseEnter, use TweenService (TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)). Altere Size para 1.05 (baseado no tamanho original) e mude a cor do UIStroke para um branco mais brilhante. No MouseLeave, retorne ao normal.
+
+Click Effect: No MouseButton1Down, encolha para 0.95 usando Enum.EasingStyle.Quad. No MouseButton1Up, retorne para 1.05 (se o mouse ainda estiver em cima) ou 1.0.
+
+Abertura da UI: Ao iniciar, coloque o MainContainer invisível e com tamanho 0,0. Use TweenService para animar a Size para 0.8, 0.7 com EasingStyle.Quint e a BackgroundTransparency dos elementos.
+
+Otimização: NUNCA crie Tweens dentro do loop RenderStepped. Use eventos de input. Use UIGradient com moderação e evite aplicar gradientes em textos com TextStroke (isso causa lag no renderizador).
+
+4. TEXTURAS E ÍCONES (USE ESTES IDs REAIS)
+
+Ícone Fechar (X): rbxassetid://6031094667
+
+Ícone Moeda ($): rbxassetid://6023426926
+
+Ícone Sacola (Buy): rbxassetid://6031091004
+
+Ícone Casa (Home): rbxassetid://6031094674
+
+Ícone Venda (Sell): rbxassetid://6031094667 (ou similar)
+
+5. ENTREGÁVEIS ESPERADOS
+
+Um script estruturado em funções (ex: createLeftPanel(), createRightPanel(), setupAnimations()).
+
+Um módulo AnimationController que centraliza as animações de Hover, Click e o Gradiente Arco-Íris.
+
+Código comentado explicando por que certas propriedades (como UIAspectRatioConstraint) foram usadas.
+
+Instruções de instalação (colocar no StarterPlayerScripts).
