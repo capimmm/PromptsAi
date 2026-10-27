@@ -1,0 +1,52 @@
+CONTEXTO E OBJETIVO
+Atue como um Engenheiro de UI/UX Sênior especializado em Roblox Studio e Luau. Preciso que você crie o código completo (LocalScript) para gerar uma interface de usuário (GUI) complexa, baseada em um layout de "Painel de Controle / Loja Arcade". O design deve ser vibrante, com bordas arredondadas, gradientes neon e um visual limpo e moderno.
+
+DIRETRIZES DE DESIGN E LAYOUT (Referência Visual)
+A interface é dividida em três áreas principais. Use ScreenGui como raiz e Frame para os painéis.
+
+Painel Esquerdo (Visualizador Principal):
+
+Header: Um Frame superior com gradiente azul ciano, cantos arredondados (UICorner) e um texto "Header" em branco. Inclua um botão de fechar (X) vermelho no canto superior direito.
+
+Corpo: Um Frame grande, escuro (cinza escuro/azulado), com bordas azuis (UIStroke). Deve ocupar a maior parte do painel.
+
+Rodapé do Painel: Abaixo do corpo, um TextButton verde vibrante com o texto "CLAIM" e um botão "X" vermelho ao lado, ambos com UICorner e UIStroke branco.
+
+Painel Direito (Grade de Itens/Recompensas):
+
+Use um UIGridLayout para organizar 7 botões/indicadores em uma grade 2x4 (sendo o último item centralizado ou ocupando a linha inferior).
+
+Item Superior Esquerdo (Saldo): Um TextButton ou Frame azul escuro com o texto "25K$" em verde neon, com um ícone pequeno.
+
+Itens de Cor (Gradientes): Crie 6 Frames retangulares com UICorner e UIStroke branco. Cada um deve ter um UIGradient representando as cores: Vermelho (topo dir.), Laranja (meio esq.), Roxo (meio dir.), Verde (baixo esq.), Ciano (baixo dir.) e um Arco-Íris (base).
+
+Barra Inferior (Navegação):
+
+Um Frame horizontal na parte inferior.
+
+Três TextButtons grandes com gradientes: "Buy" (verde), "Home" (azul) e "Sell" (laranja/amarelo). Todos devem ter UICorner e UIStroke branco espesso.
+
+ESPECIFICAÇÕES TÉCNICAS E DE ANIMAÇÃO (OTIMIZAÇÃO)
+Para garantir performance e fluidez, siga estas regras estritas:
+
+Responsividade: Use AnchorPoint (Vector2.new(0.5, 0.5)) e dimensões baseadas em Scale (UDim2.fromScale) em vez de pixels fixos. Adicione UIAspectRatioConstraint aos botões para evitar distorção.
+
+Animações (TweenService): Utilize TweenService para transições suaves.
+
+Hover: Ao passar o mouse, aumente levemente o tamanho (ex: Size = UDim2.fromScale(1.05, 1.05)) usando Enum.EasingStyle.Back e Enum.EasingDirection.Out (duração ~0.15s).
+
+Click/Press: Ao clicar, diminua o tamanho rapidamente (ex: 0.95) com Enum.EasingStyle.Quad.
+
+Aparecimento: Anima a transparência e a posição dos painéis ao abrir a UI.
+
+Otimização de UIGradient: NÃO use mais de 6 "color stops" no ColorSequence. NUNCA aplique UIGradient em objetos que tenham TextStrokeColor3 (isso causa problemas de performance). Em vez disso, use um UIStroke separado para as bordas.
+
+Estrutura de Código: Crie uma função reutilizável para configurar os botões (hover/press) para evitar repetição de código. Use CanvasGroup se precisar animar a transparência de grupos inteiros de uma vez.
+
+ENTREGÁVEIS
+
+Gere um script Luau completo (LocalScript) que construa toda a hierarquia de UI programaticamente.
+
+Inclua um módulo ou bloco de código separado para as funções de animação (TweenService).
+
+Explique brevemente como aplicar o script no StarterGui e como testar as animações no Studio.
